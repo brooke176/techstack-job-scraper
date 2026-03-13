@@ -68,20 +68,35 @@ export async function scheduleFullScrapeRun() {
   const { GREENHOUSE_COMPANIES } = await import('../scrapers/greenhouse.js');
   const { LEVER_COMPANIES } = await import('../scrapers/lever.js');
 
+  const allCompanies = [
+    ...GREENHOUSE_COMPANIES.map(c => ({ ...c, source: 'greenhouse' })),
+    ...LEVER_COMPANIES.map(c => ({ ...c, source: 'lever' })),
+  ];
+
   const jobs = [
-    ...GREENHOUSE_COMPANIES.map(c => ({
-      name: `greenhouse:${c.domain}`,
-      data: { ...c, source: 'greenhouse' },
+    ...allCompanies.map(c => ({
+      name: `${c.source}:${c.domain}`,
+      data: c,
     })),
-    ...LEVER_COMPANIES.map(c => ({
-      name: `lever:${c.domain}`,
-      data: { ...c, source: 'lever' },
+    // Also queue a headers scrape for every known domain
+    ...allCompanies.map(c => ({
+      name: `html_headers:${c.domain}`,
+      data: { companyName: c.companyName, domain: c.domain, source: 'html_headers' },
     })),
   ];
 
-  await scrapeQueue.addBulk(jobs);
-  logger.info(`Scheduled scrape run`, { jobCount: jobs.length });
-  return jobs.length;
+  // Deduplicate headers jobs by domain
+  const seen = new Set();
+  const deduped = jobs.filter(j => {
+    if (!j.name.startsWith('html_headers:')) return true;
+    if (seen.has(j.data.domain)) return false;
+    seen.add(j.data.domain);
+    return true;
+  });
+
+  await scrapeQueue.addBulk(deduped);
+  logger.info(`Scheduled scrape run`, { jobCount: deduped.length });
+  return deduped.length;
 }
 
 /**

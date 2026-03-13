@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(unzip -o ~/Downloads/job-scraper.zip && cp -r job-scraper/src/api src/ && cp -f job-scraper/.env.example . 2>/dev/null; cp -f job-scraper/.gitignore . 2>/dev/null; cp -f job-scraper/package.json . 2>/dev/null; cp -f job-scraper/package-lock.json . 2>/dev/null; rm -rf job-scraper && echo \"Done\")"
+    ]
+  }
+}

@@ -68,6 +68,40 @@ CREATE INDEX IF NOT EXISTS idx_tech_changes_domain ON tech_change_events(domain)
 CREATE INDEX IF NOT EXISTS idx_tech_changes_canonical ON tech_change_events(canonical);
 CREATE INDEX IF NOT EXISTS idx_tech_changes_detected ON tech_change_events(detected_at DESC);
 
+-- API keys table: one row per customer key
+CREATE TABLE IF NOT EXISTS api_keys (
+  id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  key_hash            TEXT UNIQUE NOT NULL,    -- SHA-256 of the raw key
+  name                TEXT NOT NULL,           -- owner label e.g. "Acme Corp"
+  plan                TEXT NOT NULL DEFAULT 'starter' CHECK (plan IN ('starter', 'pro', 'enterprise')),
+  requests_per_minute INTEGER NOT NULL DEFAULT 60,
+  monthly_limit       INTEGER NOT NULL DEFAULT 1000,
+  requests_this_month INTEGER NOT NULL DEFAULT 0,
+  month_reset_at      TIMESTAMPTZ NOT NULL DEFAULT date_trunc('month', NOW()) + interval '1 month',
+  is_active               BOOLEAN NOT NULL DEFAULT true,
+  stripe_customer_id      TEXT,
+  stripe_subscription_id  TEXT,
+  created_at              TIMESTAMPTZ DEFAULT NOW(),
+  last_used_at            TIMESTAMPTZ
+);
+
+-- Webhooks table: change-event delivery endpoints per API key
+CREATE TABLE IF NOT EXISTS webhooks (
+  id            UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  api_key_id    UUID NOT NULL REFERENCES api_keys(id) ON DELETE CASCADE,
+  url           TEXT NOT NULL,
+  secret        TEXT NOT NULL,    -- HMAC-SHA256 signing secret
+  events        TEXT[] NOT NULL DEFAULT '{tech_added,tech_removed}',
+  domains       TEXT[],           -- NULL = all domains owned by this key
+  is_active     BOOLEAN DEFAULT true,
+  created_at    TIMESTAMPTZ DEFAULT NOW(),
+  last_fired_at TIMESTAMPTZ,
+  failure_count INTEGER DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_keys_hash ON api_keys(key_hash);
+CREATE INDEX IF NOT EXISTS idx_webhooks_key  ON webhooks(api_key_id);
+
 -- Example queries after data is loaded:
 --
 -- Find all companies using React with high confidence:

@@ -10,7 +10,9 @@ import { connection, enrichQueue, storeQueue } from './queues.js';
 import { fetchGreenhouseJobs } from '../scrapers/greenhouse.js';
 import { fetchLeverJobs } from '../scrapers/lever.js';
 import { scrapeIndeedForCompany } from '../scrapers/indeed.js';
+import { scrapeHeadersForDomain } from '../scrapers/headers.js';
 import { buildTechProfileFromJobs, normalizeTechSignals } from '../enrichment/normalizer.js';
+import { query } from '../db/client.js';
 import { logger } from '../utils/logger.js';
 import { config } from '../config/index.js';
 
@@ -35,6 +37,10 @@ async function processScrapeJob(job) {
 
     case 'indeed':
       rawResult = await scrapeIndeedForCompany(job.data);
+      break;
+
+    case 'html_headers':
+      rawResult = await scrapeHeadersForDomain(job.data);
       break;
 
     case 'full_run':
@@ -88,34 +94,67 @@ async function processStoreJob(job) {
 
   logger.info(`Storing results`, { company: companyName, techCount: techProfile?.length });
 
-  // In production: write to Postgres using the schema in db/schema.sql
-  // For now, log the result structure as a dry run
-  const record = {
-    domain,
-    companyName,
-    source,
-    scrapedAt,
-    jobCount,
-    techCount: techProfile?.length || 0,
-    topTech: techProfile?.slice(0, 10).map(t => t.canonical) || [],
-    // Full profile stored as JSONB in Postgres
-    techProfile,
-  };
+  // Upsert company row
+  await query(
+    `INSERT INTO companies (domain, name)
+     VALUES ($1, $2)
+     ON CONFLICT (domain) DO UPDATE SET name = EXCLUDED.name, updated_at = NOW()`,
+    [domain, companyName]
+  );
 
-  logger.info(`[DRY RUN] Would store to DB`, { record });
+  // Fetch previous tech profile to detect changes
+  const prevResult = await query(
+    `SELECT tech_profile FROM company_tech_profiles
+     WHERE domain = $1 AND source = $2
+     ORDER BY scraped_at DESC LIMIT 1`,
+    [domain, source]
+  );
+  const prevTechs = new Map(
+    (prevResult.rows[0]?.tech_profile || []).map(t => [t.canonical, t])
+  );
 
-  // TODO: Replace with actual Postgres write:
-  // await db.query(`
-  //   INSERT INTO company_tech_profiles
-  //     (domain, company_name, source, scraped_at, job_count, tech_profile)
-  //   VALUES ($1, $2, $3, $4, $5, $6)
-  //   ON CONFLICT (domain) DO UPDATE
-  //     SET source = EXCLUDED.source,
-  //         scraped_at = EXCLUDED.scraped_at,
-  //         job_count = EXCLUDED.job_count,
-  //         tech_profile = EXCLUDED.tech_profile,
-  //         updated_at = NOW()
-  // `, [domain, companyName, source, scrapedAt, jobCount, JSON.stringify(techProfile)]);
+  // Upsert tech profile
+  await query(
+    `INSERT INTO company_tech_profiles
+       (domain, source, job_count, tech_count, tech_profile, scraped_at)
+     VALUES ($1, $2, $3, $4, $5, $6)
+     ON CONFLICT (domain, source) DO UPDATE
+       SET job_count   = EXCLUDED.job_count,
+           tech_count  = EXCLUDED.tech_count,
+           tech_profile = EXCLUDED.tech_profile,
+           scraped_at  = EXCLUDED.scraped_at,
+           updated_at  = NOW()`,
+    [domain, source, jobCount, techProfile?.length || 0, JSON.stringify(techProfile || []), scrapedAt]
+  );
+
+  // Record change events
+  if (techProfile && techProfile.length > 0) {
+    const currentTechs = new Map(techProfile.map(t => [t.canonical, t]));
+
+    // Detect added techs
+    for (const [canonical, tech] of currentTechs) {
+      if (!prevTechs.has(canonical)) {
+        await query(
+          `INSERT INTO tech_change_events (domain, event_type, canonical, category, new_confidence)
+           VALUES ($1, 'added', $2, $3, $4)`,
+          [domain, canonical, tech.category, tech.confidence]
+        ).catch(() => {}); // non-fatal
+      }
+    }
+
+    // Detect removed techs
+    for (const [canonical, tech] of prevTechs) {
+      if (!currentTechs.has(canonical)) {
+        await query(
+          `INSERT INTO tech_change_events (domain, event_type, canonical, category, old_confidence)
+           VALUES ($1, 'removed', $2, $3, $4)`,
+          [domain, canonical, tech.category, tech.confidence]
+        ).catch(() => {}); // non-fatal
+      }
+    }
+  }
+
+  logger.info(`Stored to DB`, { domain, source, techCount: techProfile?.length || 0 });
 
   return { stored: true, domain };
 }
