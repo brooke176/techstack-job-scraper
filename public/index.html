@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechStack Data — Find Which Companies Use Your Competitors' Tools</title>
+  <meta name="description" content="Real-time API that tells sales teams exactly which companies are using specific technologies. Built for developer tool companies." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --bg2:       #111118;
+      --bg3:       #18181f;
+      --border:    #2a2a38;
+      --purple:    #7c3aed;
+      --purple2:   #6d28d9;
+      --green:     #10b981;
+      --text:      #f1f0f5;
+      --muted:     #9190a0;
+      --code-bg:   #13131c;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a { color: var(--purple); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 40px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(10,10,15,0.92);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+    .logo {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+    .logo span { color: var(--purple); }
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+    .nav-links a { color: var(--muted); font-size: 14px; font-weight: 500; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .btn {
+      display: inline-block;
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      border: none;
+    }
+    .btn-primary {
+      background: var(--purple);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--purple2); text-decoration: none; }
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--purple); color: var(--purple); text-decoration: none; }
+
+    /* ── HERO ── */
+    .hero {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 100px 40px 80px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(124,58,237,.15);
+      border: 1px solid rgba(124,58,237,.35);
+      color: #a78bfa;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 100px;
+      letter-spacing: .4px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+    h1 {
+      font-size: clamp(36px, 5vw, 58px);
+      font-weight: 800;
+      letter-spacing: -1.5px;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+    h1 em { font-style: normal; color: var(--purple); }
+    .hero-sub {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 560px;
+      margin: 0 auto 40px;
+      line-height: 1.7;
+    }
+    .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .hero-cta .btn { padding: 13px 28px; font-size: 15px; }
+
+    /* ── SOCIAL PROOF ── */
+    .social-proof {
+      text-align: center;
+      padding: 20px 40px 60px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .social-proof span { margin: 0 16px; }
+
+    /* ── CODE DEMO ── */
+    .demo-section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 40px 100px;
+    }
+    .demo-label {
+      text-align: center;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 40px;
+      font-weight: 600;
+    }
+    .demo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 700px) { .demo-grid { grid-template-columns: 1fr; } }
+    .code-card {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .code-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-red { background: #ff5f57; }
+    .dot-yellow { background: #febc2e; }
+    .dot-green { background: #28c840; }
+    .code-title { margin-left: 4px; }
+    pre {
+      padding: 20px;
+      font-size: 13px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      line-height: 1.7;
+      overflow-x: auto;
+      color: #c9c7d8;
+    }
+    .kw  { color: #c084fc; }
+    .str { color: #86efac; }
+    .num { color: #fb923c; }
+    .key { color: #7dd3fc; }
+    .cmt { color: #4b5563; }
+
+    /* ── HOW IT WORKS ── */
+    .section {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 80px 40px;
+    }
+    .section-tag {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--purple);
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 16px;
+    }
+    .section-sub {
+      color: var(--muted);
+      font-size: 16px;
+      max-width: 520px;
+      margin-bottom: 56px;
+      line-height: 1.7;
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    @media (max-width: 700px) { .steps { grid-template-columns: 1fr; } }
+    .step {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+    }
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(124,58,237,.2);
+      color: #a78bfa;
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .step p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+    /* ── USE CASES ── */
+    .use-cases {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .use-case-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    @media (max-width: 700px) { .use-case-grid { grid-template-columns: 1fr; } }
+    .use-card {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+    }
+    .use-card-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--purple);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+    .use-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
+    .use-card p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+    /* ── SIGNALS ── */
+    .signals-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 800px) { .signals-grid { grid-template-columns: repeat(2, 1fr); } }
+    .signal-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+    }
+    .signal-icon { font-size: 28px; margin-bottom: 12px; }
+    .signal-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+    .signal-card p { font-size: 13px; color: var(--muted); }
+    .confidence {
+      display: inline-block;
+      background: rgba(16,185,129,.15);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 100px;
+      margin-top: 8px;
+    }
+
+    /* ── PRICING ── */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+    @media (max-width: 700px) { .pricing-grid { grid-template-columns: 1fr; } }
+    .plan {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      position: relative;
+    }
+    .plan.popular {
+      border-color: var(--purple);
+      background: linear-gradient(to bottom, rgba(124,58,237,.08), var(--bg2));
+    }
+    .popular-badge {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--purple);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 12px;
+      border-radius: 100px;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      white-space: nowrap;
+    }
+    .plan-name { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+    .plan-price { font-size: 44px; font-weight: 800; letter-spacing: -2px; }
+    .plan-price span { font-size: 16px; font-weight: 500; color: var(--muted); letter-spacing: 0; }
+    .plan-desc { font-size: 14px; color: var(--muted); margin: 12px 0 24px; }
+    .plan-features { list-style: none; margin-bottom: 28px; }
+    .plan-features li {
+      font-size: 14px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+    }
+    .plan-features li:last-child { border-bottom: none; }
+    .check { color: var(--green); font-size: 15px; flex-shrink: 0; }
+    .plan .btn { width: 100%; text-align: center; padding: 12px; }
+
+    /* ── FAQ ── */
+    .faq-list { max-width: 680px; }
+    .faq-item {
+      border-bottom: 1px solid var(--border);
+      padding: 24px 0;
+    }
+    .faq-item h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
+    .faq-item p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a { font-size: 13px; color: var(--muted); }
+    .footer-links a:hover { color: var(--text); }
+    footer p { font-size: 13px; color: var(--muted); }
+
+    /* ── DIVIDER ── */
+    hr { border: none; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">TechStack<span>Data</span></div>
+  <div class="nav-links">
+    <a href="#how-it-works">How it works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="mailto:brooke@techstackdata.io">Contact</a>
+    <a href="#pricing" class="btn btn-primary">Get API Key</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">B2B Data API</div>
+  <h1>Find companies using<br/><em>your competitors' tools</em></h1>
+  <p class="hero-sub">
+    TechStackData scrapes job listings weekly to build a live database of what technologies 58,000+ companies actually run. One API call away.
+  </p>
+  <div class="hero-cta">
+    <a href="#pricing" class="btn btn-primary">Get API access — from $49/mo</a>
+    <a href="#demo" class="btn btn-outline">See it in action</a>
+  </div>
+</section>
+
+<div class="social-proof">
+  <span>🏗️ Greenhouse API</span>
+  <span>🔧 Lever API</span>
+  <span>🌐 HTTP Headers</span>
+  <span>📋 Indeed Listings</span>
+  <span>↻ Updated weekly</span>
+</div>
+
+<!-- CODE DEMO -->
+<div class="demo-section" id="demo">
+  <div class="demo-label">The killer query — in two lines</div>
+  <div class="demo-grid">
+
+    <div class="code-card">
+      <div class="code-header">
+        <div class="dot dot-red"></div>
+        <div class="dot dot-yellow"></div>
+        <div class="dot dot-green"></div>
+        <div class="code-title">Request</div>
+      </div>
+      <pre><span class="cmt"># Find Prometheus users NOT on Datadog</span>
+<span class="cmt"># → instant prospect list for Datadog sales</span>
+
+<span class="kw">POST</span> /v1/companies/search
+<span class="key">Authorization</span>: Bearer your_api_key
+
+{
+  <span class="key">"uses"</span>:     [<span class="str">"Prometheus"</span>],
+  <span class="key">"excludes"</span>: [<span class="str">"Datadog"</span>],
+  <span class="key">"min_confidence"</span>: <span class="num">0.7</span>
+}</pre>
+    </div>
+
+    <div class="code-card">
+      <div class="code-header">
+        <div class="dot dot-red"></div>
+        <div class="dot dot-yellow"></div>
+        <div class="dot dot-green"></div>
+        <div class="code-title">Response</div>
+      </div>
+      <pre>{
+  <span class="key">"total"</span>: <span class="num">312</span>,
+  <span class="key">"data"</span>: [
+    {
+      <span class="key">"domain"</span>: <span class="str">"gitlab.com"</span>,
+      <span class="key">"name"</span>:   <span class="str">"GitLab"</span>,
+      <span class="key">"job_count"</span>: <span class="num">167</span>,
+      <span class="key">"matched_technologies"</span>: [
+        { <span class="key">"canonical"</span>: <span class="str">"Prometheus"</span>,
+          <span class="key">"confidence"</span>: <span class="num">0.85</span> }
+      ]
+    },
+    <span class="cmt">// ... 311 more</span>
+  ]
+}</pre>
+    </div>
+
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how-it-works">
+  <div class="section-tag">How it works</div>
+  <h2>Weekly scrapes. Real data.</h2>
+  <p class="section-sub">We pull from job listings, HTTP headers, and public APIs to build the most accurate tech stack database available.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>We scrape job listings</h3>
+      <p>Every week we pull thousands of job postings from Greenhouse, Lever, and Indeed. Engineers write what they actually use — not what marketing says.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>We score confidence</h3>
+      <p>Each tech signal gets a confidence score based on source reliability, mention frequency, and cross-source agreement. HTTP headers = 0.95. Job listings = 0.70.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>You query it</h3>
+      <p>One API call to find every company using React + TypeScript but not Angular. Filter by confidence, category, or time added. Export as CSV or JSON.</p>
+    </div>
+  </div>
+</section>
+
+<!-- USE CASES -->
+<div class="use-cases">
+  <div class="section">
+    <div class="section-tag">Use cases</div>
+    <h2>Built for dev tool sales teams</h2>
+    <p class="section-sub">If you sell to engineers, you need to know what stack they're on before you call them.</p>
+    <div class="use-case-grid">
+      <div class="use-card">
+        <div class="use-card-label">Competitive displacement</div>
+        <h3>Find companies to poach from competitors</h3>
+        <p>Query <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:12px;">uses: ["Prometheus"], excludes: ["Datadog"]</code> and get 300+ warm leads for Datadog's sales team in under a second.</p>
+      </div>
+      <div class="use-card">
+        <div class="use-card-label">Change alerts</div>
+        <h3>Know when a prospect adopts new tech</h3>
+        <p>Subscribe to webhook alerts for specific domains or technologies. Get pinged the moment Stripe adds Kubernetes to 12 job listings.</p>
+      </div>
+      <div class="use-card">
+        <div class="use-card-label">ICP enrichment</div>
+        <h3>Enrich your CRM with real stack data</h3>
+        <p>Pass a list of domains and get back their full tech profile. Append to HubSpot or Salesforce in bulk with the CSV export endpoint.</p>
+      </div>
+      <div class="use-card">
+        <div class="use-card-label">Market research</div>
+        <h3>Track technology adoption trends</h3>
+        <p>Watch how fast Bun is replacing Node.js, or how many Series B startups are still on Heroku. Data goes back to first scrape.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DATA SOURCES -->
+<section class="section">
+  <div class="section-tag">Data quality</div>
+  <h2>Four signal sources. One confidence score.</h2>
+  <p class="section-sub">We weight signals by reliability so you always know how much to trust the data.</p>
+  <div class="signals-grid">
+    <div class="signal-card">
+      <div class="signal-icon">📋</div>
+      <h3>Job Listings</h3>
+      <p>Greenhouse + Lever + Indeed. Engineers list tools they actually use.</p>
+      <div class="confidence">0.70 confidence</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-icon">🌐</div>
+      <h3>HTTP Headers</h3>
+      <p>Server, X-Powered-By, CDN headers. Direct evidence from the running app.</p>
+      <div class="confidence">0.92 confidence</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-icon">🔍</div>
+      <h3>Meta Tags</h3>
+      <p>Generator tags, framework fingerprints baked into the HTML.</p>
+      <div class="confidence">0.95 confidence</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-icon">🔄</div>
+      <h3>Multi-source boost</h3>
+      <p>When two sources agree, confidence rises +0.05 per confirming source.</p>
+      <div class="confidence">up to 0.99</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing" style="padding-top:40px;">
+  <div class="section-tag">Pricing</div>
+  <h2>Simple, flat pricing</h2>
+  <p class="section-sub">All plans include full access to the company search API. No per-seat fees. Cancel anytime.</p>
+  <div class="pricing-grid">
+
+    <div class="plan">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">$49<span>/mo</span></div>
+      <div class="plan-desc">For individual sales reps and small teams.</div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> 1,000 API requests/month</li>
+        <li><span class="check">✓</span> 60 requests/minute</li>
+        <li><span class="check">✓</span> Company search endpoint</li>
+        <li><span class="check">✓</span> Full tech profiles</li>
+        <li><span class="check">✓</span> Change history</li>
+      </ul>
+      <a href="mailto:brooke@techstackdata.io?subject=Starter Plan" class="btn btn-outline">Get started</a>
+    </div>
+
+    <div class="plan popular">
+      <div class="popular-badge">Most popular</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">$149<span>/mo</span></div>
+      <div class="plan-desc">For sales teams actively prospecting.</div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> 10,000 API requests/month</li>
+        <li><span class="check">✓</span> 300 requests/minute</li>
+        <li><span class="check">✓</span> Everything in Starter</li>
+        <li><span class="check">✓</span> Bulk CSV/JSON export</li>
+        <li><span class="check">✓</span> Webhook change alerts</li>
+        <li><span class="check">✓</span> Priority support</li>
+      </ul>
+      <a href="mailto:brooke@techstackdata.io?subject=Pro Plan" class="btn btn-primary">Get started</a>
+    </div>
+
+    <div class="plan">
+      <div class="plan-name">Enterprise</div>
+      <div class="plan-price">$499<span>/mo</span></div>
+      <div class="plan-desc">For data teams and RevOps at scale.</div>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Unlimited requests</li>
+        <li><span class="check">✓</span> 1,000 requests/minute</li>
+        <li><span class="check">✓</span> Everything in Pro</li>
+        <li><span class="check">✓</span> Up to 500 domains/export</li>
+        <li><span class="check">✓</span> Dedicated Slack channel</li>
+        <li><span class="check">✓</span> Custom scraping on request</li>
+      </ul>
+      <a href="mailto:brooke@techstackdata.io?subject=Enterprise Plan" class="btn btn-outline">Contact us</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section" style="padding-top:20px;">
+  <div class="section-tag">FAQ</div>
+  <h2>Common questions</h2>
+  <div class="faq-list">
+    <div class="faq-item">
+      <h3>How often is the data refreshed?</h3>
+      <p>Job listing data is updated weekly via nightly scrape runs. HTTP header data is re-checked weekly. Change events are logged on every scrape so you can see when a company added or removed a technology.</p>
+    </div>
+    <div class="faq-item">
+      <h3>How many companies are in the database?</h3>
+      <p>We currently have 230+ companies indexed and are adding more every week. Enterprise customers can request specific companies be added to the scrape list.</p>
+    </div>
+    <div class="faq-item">
+      <h3>What's the confidence score?</h3>
+      <p>Every technology signal has a confidence score from 0 to 1. HTTP headers score 0.92–0.95 (direct evidence). Job listing mentions score 0.70. When multiple sources agree, the score is boosted up to 0.99.</p>
+    </div>
+    <div class="faq-item">
+      <h3>How are API keys issued?</h3>
+      <p>After subscribing, you'll receive your API key via email within 24 hours. Use it in the Authorization header: <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:12px;">Authorization: Bearer your_key</code></p>
+    </div>
+    <div class="faq-item">
+      <h3>Can I try it before paying?</h3>
+      <p>Yes — email us and we'll set up a 7-day trial key with 100 requests. No credit card required.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Is this different from BuiltWith or Wappalyzer?</h3>
+      <p>Yes. BuiltWith focuses on front-end tech from website fingerprinting. We index back-end infrastructure, data tools, and cloud providers inferred from job listings — signals that BuiltWith can't detect. And we're 10x cheaper.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">TechStack<span>Data</span></div>
+  <div class="footer-links">
+    <a href="mailto:brooke@techstackdata.io">Contact</a>
+    <a href="mailto:brooke@techstackdata.io?subject=Trial Request">Free trial</a>
+  </div>
+  <p>© 2026 TechStackData. All rights reserved.</p>
+</footer>
+
+</body>
+</html>
