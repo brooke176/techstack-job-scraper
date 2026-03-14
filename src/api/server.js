@@ -49,6 +49,11 @@ export async function buildApp() {
       port: config.redis.port,
       password: config.redis.password,
       lazyConnect: true,
+      maxRetriesPerRequest: null,
+      enableReadyCheck: false,
+    });
+    redisClient.on('error', (err) => {
+      logger.warn('Redis connection error', { err: err.message });
     });
     await redisClient.connect();
 
@@ -178,6 +183,15 @@ export async function buildApp() {
 }
 
 // ── Start server ──────────────────────────────────────────────────────────────
+process.on('unhandledRejection', (reason) => {
+  console.error('UNHANDLED REJECTION:', reason);
+  process.exit(1);
+});
+process.on('uncaughtException', (err) => {
+  console.error('UNCAUGHT EXCEPTION:', err);
+  process.exit(1);
+});
+
 if (process.argv[1].endsWith('server.js')) {
   const PORT = parseInt(process.env.PORT || '3000');
   const HOST = process.env.HOST || '0.0.0.0';
