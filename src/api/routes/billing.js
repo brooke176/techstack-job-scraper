@@ -13,6 +13,7 @@
  *   APP_URL              — https://techstackdata.io (used for redirect URLs)
  */
 
+import crypto from 'crypto';
 import Stripe from 'stripe';
 import { query } from '../../db/client.js';
 import { logger } from '../../utils/logger.js';
@@ -31,11 +32,16 @@ function getStripe() {
 }
 
 export async function billingRoutes(fastify) {
-  // POST /billing/checkout — create Stripe checkout session
-  fastify.post('/checkout', async (request, reply) => {
-    const { plan } = request.body || {};
+  // POST /billing/checkout — create Stripe checkout session (no auth required)
+  // Body: { plan: 'pro' | 'enterprise', name?: string, email: string }
+  fastify.post('/checkout', { preHandler: [] }, async (request, reply) => {
+    const { plan, name, email } = request.body || {};
+
     if (!['pro', 'enterprise'].includes(plan)) {
       return reply.code(400).send({ error: 'invalid_plan', message: 'Plan must be pro or enterprise' });
+    }
+    if (!email || !email.includes('@')) {
+      return reply.code(400).send({ error: 'email_required', message: 'A valid email is required' });
     }
 
     const priceId = plan === 'pro'
@@ -51,36 +57,44 @@ export async function billingRoutes(fastify) {
       return reply.code(503).send({ error: 'billing_unavailable', message: 'Billing not configured' });
     }
 
-    const appUrl = process.env.APP_URL || 'http://localhost:3000';
-    const apiKey = request.apiKey;
+    // Create API key upfront with starter limits — webhook upgrades it after payment
+    const rawKey = 'tsd_' + crypto.randomBytes(32).toString('hex');
+    const keyHash = crypto.createHash('sha256').update(rawKey).digest('hex');
+    const displayName = name?.trim() || email.split('@')[0];
 
-    // Create or retrieve Stripe customer
-    let customerId = apiKey.stripe_customer_id;
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        name: apiKey.name,
-        metadata: { api_key_id: apiKey.id },
-      });
-      customerId = customer.id;
-      await query(
-        'UPDATE api_keys SET stripe_customer_id = $1 WHERE id = $2',
-        [customerId, apiKey.id]
+    // Reuse existing key if this email already has one
+    let keyId;
+    const existing = await query(
+      'SELECT id FROM api_keys WHERE email = $1 AND is_active = true LIMIT 1',
+      [email.toLowerCase().trim()]
+    );
+    if (existing.rows.length > 0) {
+      keyId = existing.rows[0].id;
+    } else {
+      const { rows } = await query(
+        `INSERT INTO api_keys (key_hash, name, email, plan, requests_per_minute, monthly_limit)
+         VALUES ($1, $2, $3, 'starter', 60, 1000) RETURNING id`,
+        [keyHash, displayName, email.toLowerCase().trim()]
       );
+      keyId = rows[0].id;
     }
 
+    const rawUrl = process.env.APP_URL || 'localhost:3000';
+    const appUrl = rawUrl.startsWith('http') ? rawUrl : `https://${rawUrl}`;
+
     const session = await stripe.checkout.sessions.create({
-      customer: customerId,
+      customer_email: email,
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${appUrl}/billing/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${appUrl}/billing/success?key=${rawKey}&plan=${plan}`,
       cancel_url:  `${appUrl}/billing/cancel`,
-      metadata: { api_key_id: apiKey.id, plan },
-      subscription_data: {
-        metadata: { api_key_id: apiKey.id, plan },
-      },
+      metadata: { api_key_id: keyId, plan },
+      subscription_data: { metadata: { api_key_id: keyId, plan } },
+      allow_promotion_codes: true,
     });
 
-    return reply.code(200).send({ checkout_url: session.url, session_id: session.id });
+    // Return JSON so the front-end can redirect
+    return reply.code(200).send({ checkout_url: session.url });
   });
 
   // GET /billing/portal — redirect to Stripe customer portal

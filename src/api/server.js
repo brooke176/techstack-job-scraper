@@ -13,6 +13,7 @@ import { companiesRoutes } from './routes/companies.js';
 import { exportRoutes } from './routes/export.js';
 import { webhooksRoutes } from './routes/webhooks.js';
 import { billingRoutes, stripeWebhookRoute } from './routes/billing.js';
+import { authRoutes } from './routes/auth.js';
 import { closePool } from '../db/client.js';
 
 export async function buildApp() {
@@ -30,7 +31,8 @@ export async function buildApp() {
 
   // ── Security headers ───────────────────────────────────────────────────────
   await app.register(helmet, {
-    contentSecurityPolicy: false, // API, no HTML served
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
   });
 
   // ── CORS ──────────────────────────────────────────────────────────────────
@@ -143,7 +145,7 @@ export async function buildApp() {
     await v1.register(companiesRoutes, { prefix: '/companies' });
     await v1.register(exportRoutes,    { prefix: '/export' });
     await v1.register(webhooksRoutes,  { prefix: '/webhooks' });
-    await v1.register(billingRoutes,   { prefix: '/billing' });
+    // portal is auth-protected; checkout is public (registered below)
 
     // GET /v1/me — returns current API key info
     v1.get('/me', async (request, reply) => {
@@ -165,9 +167,70 @@ export async function buildApp() {
 
   }, { prefix: '/v1' });
 
-  // ── Stripe webhook (raw body, no auth) ─────────────────────────────────────
+  // ── Public routes (no auth) ────────────────────────────────────────────────
   await app.register(async (pub) => {
     await pub.register(stripeWebhookRoute);
+    await pub.register(authRoutes, { prefix: '/v1/auth' });
+    await pub.register(billingRoutes, { prefix: '/v1/billing' });
+
+    // Stripe checkout success page
+    pub.get('/billing/success', async (request, reply) => {
+      const { key, plan } = request.query;
+      const planLabel = plan === 'enterprise' ? 'Enterprise' : 'Pro';
+      const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Your API Key — TechStackData</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:#0a0a0f;color:#f1f0f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+    .card{background:#111118;border:1px solid #2a2a38;border-radius:16px;padding:48px;max-width:560px;width:100%;text-align:center}
+    .icon{font-size:48px;margin-bottom:24px}
+    h1{font-size:28px;font-weight:800;margin-bottom:8px;letter-spacing:-0.5px}
+    .sub{color:#9190a0;font-size:15px;margin-bottom:36px;line-height:1.6}
+    .key-box{background:#0d0d14;border:1px solid #7c3aed;border-radius:10px;padding:18px 20px;font-family:'SF Mono','Fira Code',monospace;font-size:13px;color:#a78bfa;word-break:break-all;text-align:left;margin-bottom:12px;position:relative}
+    .copy-btn{width:100%;padding:12px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:24px;transition:background .15s}
+    .copy-btn:hover{background:#6d28d9}
+    .warning{background:rgba(251,146,60,.1);border:1px solid rgba(251,146,60,.3);border-radius:8px;padding:14px 16px;font-size:13px;color:#fb923c;margin-bottom:28px;text-align:left}
+    .docs-link{color:#7c3aed;font-size:14px}
+    .plan-badge{display:inline-block;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.35);color:#a78bfa;font-size:12px;font-weight:700;padding:3px 10px;border-radius:100px;margin-bottom:20px;text-transform:uppercase;letter-spacing:.5px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">🎉</div>
+    <div class="plan-badge">${planLabel} Plan Active</div>
+    <h1>You're in. Here's your API key.</h1>
+    <p class="sub">Copy this key now — for security reasons it cannot be shown again.</p>
+    <div class="key-box" id="keyBox">${key || 'Key not found — contact support@techstackdata.io'}</div>
+    <button class="copy-btn" onclick="copyKey()">Copy API Key</button>
+    <div class="warning">⚠️ Store this somewhere safe. If you lose it, you'll need to contact support to rotate it.</div>
+    <p style="color:#9190a0;font-size:14px">Use it in requests:<br/><code style="color:#7dd3fc">Authorization: Bearer ${key ? key.substring(0, 12) + '...' : 'your_key'}</code></p>
+    <br/>
+    <a class="docs-link" href="https://techstack-job-scraper-production.up.railway.app/health">Test your key →</a>
+  </div>
+  <script>
+    function copyKey() {
+      const key = document.getElementById('keyBox').textContent;
+      navigator.clipboard.writeText(key).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.textContent = '✓ Copied!';
+        btn.style.background = '#10b981';
+        setTimeout(() => { btn.textContent = 'Copy API Key'; btn.style.background = ''; }, 2000);
+      });
+    }
+  </script>
+</body>
+</html>`;
+      return reply.type('text/html').send(html);
+    });
+
+    // Stripe checkout cancel page
+    pub.get('/billing/cancel', async (request, reply) => {
+      return reply.redirect(302, 'https://brooke176.github.io/techstack-job-scraper/#pricing');
+    });
   });
 
   // ── 404 handler ────────────────────────────────────────────────────────────

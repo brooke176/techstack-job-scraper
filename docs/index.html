@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TechStack Data — Find Which Companies Use Your Competitors' Tools</title>
-  <meta name="description" content="Real-time API that tells sales teams exactly which companies are using specific technologies. Built for developer tool companies." />
+  <title>TechStackData — Find Companies Using Any Technology Stack</title>
+  <meta name="description" content="Real-time API that tells sales teams exactly which companies are using specific technologies. Daily-refreshed data from job listings, HTTP headers, and meta signals." />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -32,7 +32,7 @@
     a { color: var(--purple); text-decoration: none; }
     a:hover { text-decoration: underline; }
 
-    /* ── NAV ── */
+    /* NAV */
     nav {
       display: flex;
       justify-content: space-between;
@@ -45,16 +45,13 @@
       backdrop-filter: blur(12px);
       z-index: 100;
     }
-    .logo {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.3px;
-    }
+    .logo { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
     .logo span { color: var(--purple); }
     .nav-links { display: flex; gap: 32px; align-items: center; }
     .nav-links a { color: var(--muted); font-size: 14px; font-weight: 500; }
     .nav-links a:hover { color: var(--text); text-decoration: none; }
+    @media (max-width: 600px) { nav { padding: 16px 20px; } .nav-links { gap: 16px; } .nav-links a:not(.btn) { display: none; } }
+
     .btn {
       display: inline-block;
       padding: 9px 20px;
@@ -64,20 +61,14 @@
       cursor: pointer;
       transition: all .15s;
       border: none;
+      text-align: center;
     }
-    .btn-primary {
-      background: var(--purple);
-      color: #fff;
-    }
+    .btn-primary { background: var(--purple); color: #fff; }
     .btn-primary:hover { background: var(--purple2); text-decoration: none; }
-    .btn-outline {
-      background: transparent;
-      color: var(--text);
-      border: 1px solid var(--border);
-    }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
     .btn-outline:hover { border-color: var(--purple); color: var(--purple); text-decoration: none; }
 
-    /* ── HERO ── */
+    /* HERO */
     .hero {
       max-width: 860px;
       margin: 0 auto;
@@ -115,21 +106,21 @@
     .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
     .hero-cta .btn { padding: 13px 28px; font-size: 15px; }
 
-    /* ── SOCIAL PROOF ── */
-    .social-proof {
-      text-align: center;
-      padding: 20px 40px 60px;
-      color: var(--muted);
-      font-size: 13px;
+    /* STATS */
+    .stats-bar {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      padding: 40px 40px 60px;
+      flex-wrap: wrap;
     }
-    .social-proof span { margin: 0 16px; }
+    .stat { text-align: center; }
+    .stat-num { font-size: 32px; font-weight: 800; letter-spacing: -1px; color: var(--text); }
+    .stat-num span { color: var(--purple); }
+    .stat-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
 
-    /* ── CODE DEMO ── */
-    .demo-section {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 0 40px 100px;
-    }
+    /* CODE DEMO */
+    .demo-section { max-width: 900px; margin: 0 auto; padding: 0 40px 100px; }
     .demo-label {
       text-align: center;
       font-size: 13px;
@@ -139,18 +130,9 @@
       margin-bottom: 40px;
       font-weight: 600;
     }
-    .demo-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
+    .demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     @media (max-width: 700px) { .demo-grid { grid-template-columns: 1fr; } }
-    .code-card {
-      background: var(--code-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-    }
+    .code-card { background: var(--code-bg); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
     .code-header {
       display: flex;
       align-items: center;
@@ -180,12 +162,8 @@
     .key { color: #7dd3fc; }
     .cmt { color: #4b5563; }
 
-    /* ── HOW IT WORKS ── */
-    .section {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 80px 40px;
-    }
+    /* HOW IT WORKS */
+    .section { max-width: 1000px; margin: 0 auto; padding: 80px 40px; }
     .section-tag {
       font-size: 12px;
       font-weight: 700;
@@ -194,90 +172,33 @@
       color: var(--purple);
       margin-bottom: 12px;
     }
-    h2 {
-      font-size: clamp(28px, 4vw, 40px);
-      font-weight: 800;
-      letter-spacing: -1px;
-      margin-bottom: 16px;
-    }
-    .section-sub {
-      color: var(--muted);
-      font-size: 16px;
-      max-width: 520px;
-      margin-bottom: 56px;
-      line-height: 1.7;
-    }
-    .steps {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-    }
+    h2 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; letter-spacing: -1px; margin-bottom: 16px; }
+    .section-sub { color: var(--muted); font-size: 16px; max-width: 520px; margin-bottom: 56px; line-height: 1.7; }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
     @media (max-width: 700px) { .steps { grid-template-columns: 1fr; } }
-    .step {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 28px;
-    }
+    .step { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
     .step-num {
-      width: 32px;
-      height: 32px;
-      border-radius: 8px;
-      background: rgba(124,58,237,.2);
-      color: #a78bfa;
-      font-size: 14px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 16px;
+      width: 32px; height: 32px; border-radius: 8px;
+      background: rgba(124,58,237,.2); color: #a78bfa;
+      font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; margin-bottom: 16px;
     }
     .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
     .step p { font-size: 14px; color: var(--muted); line-height: 1.6; }
 
-    /* ── USE CASES ── */
-    .use-cases {
-      background: var(--bg2);
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-    .use-case-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 24px;
-    }
+    /* USE CASES */
+    .use-cases { background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .use-case-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
     @media (max-width: 700px) { .use-case-grid { grid-template-columns: 1fr; } }
-    .use-card {
-      background: var(--bg3);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 28px;
-    }
-    .use-card-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--purple);
-      font-weight: 700;
-      margin-bottom: 10px;
-    }
+    .use-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+    .use-card-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--purple); font-weight: 700; margin-bottom: 10px; }
     .use-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 10px; }
     .use-card p { font-size: 14px; color: var(--muted); line-height: 1.6; }
 
-    /* ── SIGNALS ── */
-    .signals-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-    }
+    /* SIGNALS */
+    .signals-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
     @media (max-width: 800px) { .signals-grid { grid-template-columns: repeat(2, 1fr); } }
-    .signal-card {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 24px;
-      text-align: center;
-    }
+    .signal-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 24px; text-align: center; }
     .signal-icon { font-size: 28px; margin-bottom: 12px; }
     .signal-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
     .signal-card p { font-size: 13px; color: var(--muted); }
@@ -285,46 +206,23 @@
       display: inline-block;
       background: rgba(16,185,129,.15);
       color: var(--green);
-      font-size: 11px;
-      font-weight: 700;
-      padding: 2px 8px;
-      border-radius: 100px;
-      margin-top: 8px;
+      font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 100px; margin-top: 8px;
     }
 
-    /* ── PRICING ── */
-    .pricing-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      align-items: start;
-    }
+    /* PRICING */
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; align-items: start; }
     @media (max-width: 700px) { .pricing-grid { grid-template-columns: 1fr; } }
-    .plan {
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 32px;
-      position: relative;
-    }
+    .plan { background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 32px; position: relative; }
     .plan.popular {
       border-color: var(--purple);
       background: linear-gradient(to bottom, rgba(124,58,237,.08), var(--bg2));
     }
     .popular-badge {
-      position: absolute;
-      top: -12px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--purple);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 12px;
-      border-radius: 100px;
-      text-transform: uppercase;
-      letter-spacing: .5px;
-      white-space: nowrap;
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: var(--purple); color: #fff;
+      font-size: 11px; font-weight: 700; padding: 3px 12px; border-radius: 100px;
+      text-transform: uppercase; letter-spacing: .5px; white-space: nowrap;
     }
     .plan-name { font-size: 14px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
     .plan-price { font-size: 44px; font-weight: 800; letter-spacing: -2px; }
@@ -332,44 +230,77 @@
     .plan-desc { font-size: 14px; color: var(--muted); margin: 12px 0 24px; }
     .plan-features { list-style: none; margin-bottom: 28px; }
     .plan-features li {
-      font-size: 14px;
-      padding: 7px 0;
+      font-size: 14px; padding: 7px 0;
       border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      color: var(--muted);
+      display: flex; align-items: center; gap: 10px; color: var(--muted);
     }
     .plan-features li:last-child { border-bottom: none; }
     .check { color: var(--green); font-size: 15px; flex-shrink: 0; }
     .plan .btn { width: 100%; text-align: center; padding: 12px; }
 
-    /* ── FAQ ── */
+    /* FAQ */
     .faq-list { max-width: 680px; }
-    .faq-item {
-      border-bottom: 1px solid var(--border);
-      padding: 24px 0;
-    }
+    .faq-item { border-bottom: 1px solid var(--border); padding: 24px 0; }
     .faq-item h3 { font-size: 16px; font-weight: 600; margin-bottom: 10px; }
     .faq-item p { font-size: 14px; color: var(--muted); line-height: 1.7; }
 
-    /* ── FOOTER ── */
+    /* FOOTER */
     footer {
       border-top: 1px solid var(--border);
       padding: 40px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
     }
     .footer-links { display: flex; gap: 24px; }
     .footer-links a { font-size: 13px; color: var(--muted); }
     .footer-links a:hover { color: var(--text); }
     footer p { font-size: 13px; color: var(--muted); }
 
-    /* ── DIVIDER ── */
     hr { border: none; border-top: 1px solid var(--border); }
+
+    /* MODAL */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(0,0,0,.7);
+      backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 440px;
+      width: 100%;
+      position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 16px; right: 16px;
+      background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; line-height: 1;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal h3 { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .modal p { font-size: 14px; color: var(--muted); margin-bottom: 24px; }
+    .modal .plan-chip {
+      display: inline-block;
+      background: rgba(124,58,237,.15);
+      border: 1px solid rgba(124,58,237,.35);
+      color: #a78bfa; font-size: 12px; font-weight: 700;
+      padding: 3px 10px; border-radius: 100px; margin-bottom: 20px;
+      text-transform: uppercase; letter-spacing: .5px;
+    }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--muted); }
+    .field input {
+      width: 100%; padding: 10px 14px;
+      background: var(--bg3); border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-size: 14px; outline: none;
+    }
+    .field input:focus { border-color: var(--purple); }
+    .modal .btn { width: 100%; padding: 12px; font-size: 15px; margin-top: 8px; }
+    .modal-error { font-size: 13px; color: #f87171; margin-top: 10px; display: none; }
+    .modal-spinner { display: none; }
   </style>
 </head>
 <body>
@@ -380,7 +311,7 @@
   <div class="nav-links">
     <a href="#how-it-works">How it works</a>
     <a href="#pricing">Pricing</a>
-    <a href="mailto:brooke@techstackdata.io">Contact</a>
+    <a href="mailto:hello@techstackdata.io">Contact</a>
     <a href="#pricing" class="btn btn-primary">Get API Key</a>
   </div>
 </nav>
@@ -388,9 +319,9 @@
 <!-- HERO -->
 <section class="hero">
   <div class="badge">B2B Data API</div>
-  <h1>Find companies using<br/><em>your competitors' tools</em></h1>
+  <h1>Know which companies use<br/><em>any technology stack</em></h1>
   <p class="hero-sub">
-    TechStackData scrapes job listings weekly to build a live database of what technologies 58,000+ companies actually run. One API call away.
+    Daily-refreshed API that tells sales teams exactly which technologies 300+ companies are running right now — scraped from job listings, HTTP headers, and meta signals.
   </p>
   <div class="hero-cta">
     <a href="#pricing" class="btn btn-primary">Get API access — from $49/mo</a>
@@ -398,31 +329,41 @@
   </div>
 </section>
 
-<div class="social-proof">
-  <span>🏗️ Greenhouse API</span>
-  <span>🔧 Lever API</span>
-  <span>🌐 HTTP Headers</span>
-  <span>📋 Indeed Listings</span>
-  <span>↻ Updated weekly</span>
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat">
+    <div class="stat-num">300<span>+</span></div>
+    <div class="stat-label">Companies indexed</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">1,600<span>+</span></div>
+    <div class="stat-label">Tech signals tracked</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">Daily</div>
+    <div class="stat-label">Data refresh cadence</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">0.95</div>
+    <div class="stat-label">Max confidence score</div>
+  </div>
 </div>
 
 <!-- CODE DEMO -->
 <div class="demo-section" id="demo">
-  <div class="demo-label">The killer query — in two lines</div>
+  <div class="demo-label">The killer query — two lines of code</div>
   <div class="demo-grid">
 
     <div class="code-card">
       <div class="code-header">
-        <div class="dot dot-red"></div>
-        <div class="dot dot-yellow"></div>
-        <div class="dot dot-green"></div>
+        <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
         <div class="code-title">Request</div>
       </div>
       <pre><span class="cmt"># Find Prometheus users NOT on Datadog</span>
 <span class="cmt"># → instant prospect list for Datadog sales</span>
 
 <span class="kw">POST</span> /v1/companies/search
-<span class="key">Authorization</span>: Bearer your_api_key
+<span class="key">Authorization</span>: Bearer tsd_your_key
 
 {
   <span class="key">"uses"</span>:     [<span class="str">"Prometheus"</span>],
@@ -433,24 +374,23 @@
 
     <div class="code-card">
       <div class="code-header">
-        <div class="dot dot-red"></div>
-        <div class="dot dot-yellow"></div>
-        <div class="dot dot-green"></div>
+        <div class="dot dot-red"></div><div class="dot dot-yellow"></div><div class="dot dot-green"></div>
         <div class="code-title">Response</div>
       </div>
       <pre>{
-  <span class="key">"total"</span>: <span class="num">312</span>,
+  <span class="key">"total"</span>: <span class="num">23</span>,
   <span class="key">"data"</span>: [
     {
       <span class="key">"domain"</span>: <span class="str">"gitlab.com"</span>,
       <span class="key">"name"</span>:   <span class="str">"GitLab"</span>,
-      <span class="key">"job_count"</span>: <span class="num">167</span>,
       <span class="key">"matched_technologies"</span>: [
-        { <span class="key">"canonical"</span>: <span class="str">"Prometheus"</span>,
-          <span class="key">"confidence"</span>: <span class="num">0.85</span> }
+        {
+          <span class="key">"canonical"</span>: <span class="str">"Prometheus"</span>,
+          <span class="key">"confidence"</span>: <span class="num">0.85</span>
+        }
       ]
     },
-    <span class="cmt">// ... 311 more</span>
+    <span class="cmt">// ... 22 more</span>
   ]
 }</pre>
     </div>
@@ -461,22 +401,22 @@
 <!-- HOW IT WORKS -->
 <section class="section" id="how-it-works">
   <div class="section-tag">How it works</div>
-  <h2>Weekly scrapes. Real data.</h2>
-  <p class="section-sub">We pull from job listings, HTTP headers, and public APIs to build the most accurate tech stack database available.</p>
+  <h2>Daily scrapes. Real signals.</h2>
+  <p class="section-sub">We pull from job listings, HTTP headers, and public APIs to build the most accurate tech stack database available — refreshed every 24 hours.</p>
   <div class="steps">
     <div class="step">
       <div class="step-num">1</div>
-      <h3>We scrape job listings</h3>
-      <p>Every week we pull thousands of job postings from Greenhouse, Lever, and Indeed. Engineers write what they actually use — not what marketing says.</p>
+      <h3>We scrape job listings daily</h3>
+      <p>Every day we pull job postings from Greenhouse and Lever. Engineers write what they actually use in job descriptions — not what marketing says.</p>
     </div>
     <div class="step">
       <div class="step-num">2</div>
-      <h3>We score confidence</h3>
-      <p>Each tech signal gets a confidence score based on source reliability, mention frequency, and cross-source agreement. HTTP headers = 0.95. Job listings = 0.70.</p>
+      <h3>We score each signal</h3>
+      <p>Each tech signal gets a confidence score based on source reliability, mention frequency, and cross-source agreement. HTTP headers score 0.95. Job listing mentions score 0.70.</p>
     </div>
     <div class="step">
       <div class="step-num">3</div>
-      <h3>You query it</h3>
+      <h3>You query it instantly</h3>
       <p>One API call to find every company using React + TypeScript but not Angular. Filter by confidence, category, or time added. Export as CSV or JSON.</p>
     </div>
   </div>
@@ -492,12 +432,12 @@
       <div class="use-card">
         <div class="use-card-label">Competitive displacement</div>
         <h3>Find companies to poach from competitors</h3>
-        <p>Query <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:12px;">uses: ["Prometheus"], excludes: ["Datadog"]</code> and get 300+ warm leads for Datadog's sales team in under a second.</p>
+        <p>Query <code style="background:var(--bg);padding:2px 6px;border-radius:4px;font-size:12px;">uses: ["Prometheus"], excludes: ["Datadog"]</code> and get warm leads for Datadog's sales team in under a second.</p>
       </div>
       <div class="use-card">
         <div class="use-card-label">Change alerts</div>
         <h3>Know when a prospect adopts new tech</h3>
-        <p>Subscribe to webhook alerts for specific domains or technologies. Get pinged the moment Stripe adds Kubernetes to 12 job listings.</p>
+        <p>Subscribe to webhook alerts for specific domains or technologies. Get pinged the moment a target company adds Kubernetes to their job listings.</p>
       </div>
       <div class="use-card">
         <div class="use-card-label">ICP enrichment</div>
@@ -507,7 +447,7 @@
       <div class="use-card">
         <div class="use-card-label">Market research</div>
         <h3>Track technology adoption trends</h3>
-        <p>Watch how fast Bun is replacing Node.js, or how many Series B startups are still on Heroku. Data goes back to first scrape.</p>
+        <p>Watch how fast Bun is replacing Node.js, or how many Series B startups are still on Heroku. Historical change data goes back to your first scrape.</p>
       </div>
     </div>
   </div>
@@ -516,25 +456,25 @@
 <!-- DATA SOURCES -->
 <section class="section">
   <div class="section-tag">Data quality</div>
-  <h2>Four signal sources. One confidence score.</h2>
+  <h2>Three signal sources. One confidence score.</h2>
   <p class="section-sub">We weight signals by reliability so you always know how much to trust the data.</p>
   <div class="signals-grid">
     <div class="signal-card">
       <div class="signal-icon">📋</div>
       <h3>Job Listings</h3>
-      <p>Greenhouse + Lever + Indeed. Engineers list tools they actually use.</p>
+      <p>Greenhouse + Lever. Engineers list the tools they actually use daily.</p>
       <div class="confidence">0.70 confidence</div>
     </div>
     <div class="signal-card">
       <div class="signal-icon">🌐</div>
       <h3>HTTP Headers</h3>
-      <p>Server, X-Powered-By, CDN headers. Direct evidence from the running app.</p>
+      <p>Server, X-Powered-By, CDN headers. Direct evidence from the live app.</p>
       <div class="confidence">0.92 confidence</div>
     </div>
     <div class="signal-card">
       <div class="signal-icon">🔍</div>
       <h3>Meta Tags</h3>
-      <p>Generator tags, framework fingerprints baked into the HTML.</p>
+      <p>Generator tags, framework fingerprints baked into the HTML source.</p>
       <div class="confidence">0.95 confidence</div>
     </div>
     <div class="signal-card">
@@ -550,27 +490,27 @@
 <section class="section" id="pricing" style="padding-top:40px;">
   <div class="section-tag">Pricing</div>
   <h2>Simple, flat pricing</h2>
-  <p class="section-sub">All plans include full access to the company search API. No per-seat fees. Cancel anytime.</p>
+  <p class="section-sub">All paid plans include full access to the company search API, CSV export, and webhook alerts. No per-seat fees. Cancel anytime.</p>
   <div class="pricing-grid">
 
     <div class="plan">
       <div class="plan-name">Starter</div>
-      <div class="plan-price">$49<span>/mo</span></div>
-      <div class="plan-desc">For individual sales reps and small teams.</div>
+      <div class="plan-price">Free</div>
+      <div class="plan-desc">Try the API. No credit card required.</div>
       <ul class="plan-features">
         <li><span class="check">✓</span> 1,000 API requests/month</li>
         <li><span class="check">✓</span> 60 requests/minute</li>
         <li><span class="check">✓</span> Company search endpoint</li>
         <li><span class="check">✓</span> Full tech profiles</li>
-        <li><span class="check">✓</span> Change history</li>
+        <li><span class="check">✓</span> Instant API key</li>
       </ul>
-      <a href="mailto:brooke@techstackdata.io?subject=Starter Plan" class="btn btn-outline">Get started</a>
+      <button class="btn btn-outline" onclick="openModal('starter')">Get free API key</button>
     </div>
 
     <div class="plan popular">
       <div class="popular-badge">Most popular</div>
       <div class="plan-name">Pro</div>
-      <div class="plan-price">$149<span>/mo</span></div>
+      <div class="plan-price">$49<span>/mo</span></div>
       <div class="plan-desc">For sales teams actively prospecting.</div>
       <ul class="plan-features">
         <li><span class="check">✓</span> 10,000 API requests/month</li>
@@ -578,9 +518,9 @@
         <li><span class="check">✓</span> Everything in Starter</li>
         <li><span class="check">✓</span> Bulk CSV/JSON export</li>
         <li><span class="check">✓</span> Webhook change alerts</li>
-        <li><span class="check">✓</span> Priority support</li>
+        <li><span class="check">✓</span> Priority email support</li>
       </ul>
-      <a href="mailto:brooke@techstackdata.io?subject=Pro Plan" class="btn btn-primary">Get started</a>
+      <button class="btn btn-primary" onclick="openModal('pro')">Get Pro access</button>
     </div>
 
     <div class="plan">
@@ -595,7 +535,7 @@
         <li><span class="check">✓</span> Dedicated Slack channel</li>
         <li><span class="check">✓</span> Custom scraping on request</li>
       </ul>
-      <a href="mailto:brooke@techstackdata.io?subject=Enterprise Plan" class="btn btn-outline">Contact us</a>
+      <button class="btn btn-outline" onclick="openModal('enterprise')">Get Enterprise access</button>
     </div>
 
   </div>
@@ -608,27 +548,27 @@
   <div class="faq-list">
     <div class="faq-item">
       <h3>How often is the data refreshed?</h3>
-      <p>Job listing data is updated weekly via nightly scrape runs. HTTP header data is re-checked weekly. Change events are logged on every scrape so you can see when a company added or removed a technology.</p>
+      <p>All data sources are scraped daily. HTTP header signals are re-checked every 24 hours. Change events are logged on every scrape so you can see exactly when a company added or dropped a technology.</p>
     </div>
     <div class="faq-item">
       <h3>How many companies are in the database?</h3>
-      <p>We currently have 230+ companies indexed and are adding more every week. Enterprise customers can request specific companies be added to the scrape list.</p>
+      <p>We currently have 300+ companies indexed across tech, fintech, devtools, and SaaS — and we're growing daily. Enterprise customers can request specific companies be added to the scrape list within 24 hours.</p>
     </div>
     <div class="faq-item">
       <h3>What's the confidence score?</h3>
-      <p>Every technology signal has a confidence score from 0 to 1. HTTP headers score 0.92–0.95 (direct evidence). Job listing mentions score 0.70. When multiple sources agree, the score is boosted up to 0.99.</p>
+      <p>Every technology signal has a confidence score from 0 to 1. HTTP headers score 0.92–0.95 (direct evidence from the running app). Job listing mentions score 0.70. When multiple sources agree, the score is boosted up to 0.99.</p>
     </div>
     <div class="faq-item">
-      <h3>How are API keys issued?</h3>
-      <p>After subscribing, you'll receive your API key via email within 24 hours. Use it in the Authorization header: <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:12px;">Authorization: Bearer your_key</code></p>
-    </div>
-    <div class="faq-item">
-      <h3>Can I try it before paying?</h3>
-      <p>Yes — email us and we'll set up a 7-day trial key with 100 requests. No credit card required.</p>
+      <h3>How do I get my API key?</h3>
+      <p>Instantly — after signing up (free) or completing checkout (paid plans), your API key is displayed on screen. Paid keys are activated immediately after payment via Stripe. Use it in the <code style="background:var(--bg3);padding:2px 6px;border-radius:4px;font-size:12px;">Authorization: Bearer your_key</code> header.</p>
     </div>
     <div class="faq-item">
       <h3>Is this different from BuiltWith or Wappalyzer?</h3>
-      <p>Yes. BuiltWith focuses on front-end tech from website fingerprinting. We index back-end infrastructure, data tools, and cloud providers inferred from job listings — signals that BuiltWith can't detect. And we're 10x cheaper.</p>
+      <p>Yes. BuiltWith focuses on front-end tech from website fingerprinting. We index back-end infrastructure, data tools, and cloud providers inferred from engineering job descriptions — signals that BuiltWith can't detect. And we're 10x cheaper.</p>
+    </div>
+    <div class="faq-item">
+      <h3>Can I cancel anytime?</h3>
+      <p>Yes. Cancel through the Stripe billing portal — no cancellation fees, no questions asked. Your key stays active until the end of your billing period.</p>
     </div>
   </div>
 </section>
@@ -637,11 +577,141 @@
 <footer>
   <div class="logo">TechStack<span>Data</span></div>
   <div class="footer-links">
-    <a href="mailto:brooke@techstackdata.io">Contact</a>
-    <a href="mailto:brooke@techstackdata.io?subject=Trial Request">Free trial</a>
+    <a href="mailto:hello@techstackdata.io">Contact</a>
+    <a href="#pricing">Pricing</a>
   </div>
   <p>© 2026 TechStackData. All rights reserved.</p>
 </footer>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="plan-chip" id="modalPlanChip"></div>
+    <h3 id="modalTitle"></h3>
+    <p id="modalDesc"></p>
+    <div class="field">
+      <label for="modalName">Name</label>
+      <input type="text" id="modalName" placeholder="Your name" autocomplete="name" />
+    </div>
+    <div class="field">
+      <label for="modalEmail">Work email <span style="color:#f87171">*</span></label>
+      <input type="email" id="modalEmail" placeholder="you@company.com" autocomplete="email" />
+    </div>
+    <button class="btn btn-primary" id="modalSubmitBtn" onclick="submitModal()">
+      <span id="modalBtnText">Continue</span>
+    </button>
+    <div class="modal-error" id="modalError"></div>
+  </div>
+</div>
+
+<script>
+  const API = 'https://techstack-job-scraper-production.up.railway.app';
+  let currentPlan = '';
+
+  function openModal(plan) {
+    currentPlan = plan;
+    const chip = document.getElementById('modalPlanChip');
+    const title = document.getElementById('modalTitle');
+    const desc = document.getElementById('modalDesc');
+    const btn = document.getElementById('modalBtnText');
+
+    if (plan === 'starter') {
+      chip.textContent = 'Starter — Free';
+      title.textContent = 'Get your free API key';
+      desc.textContent = '1,000 requests/month. No credit card required. Your key is shown instantly.';
+      btn.textContent = 'Create free key';
+    } else if (plan === 'pro') {
+      chip.textContent = 'Pro — $49/mo';
+      title.textContent = 'Get Pro access';
+      desc.textContent = '10,000 requests/month, CSV export, and webhook alerts. Billed monthly via Stripe.';
+      btn.textContent = 'Continue to checkout →';
+    } else {
+      chip.textContent = 'Enterprise — $499/mo';
+      title.textContent = 'Get Enterprise access';
+      desc.textContent = 'Unlimited requests, 1,000 req/min, dedicated support. Billed monthly via Stripe.';
+      btn.textContent = 'Continue to checkout →';
+    }
+
+    document.getElementById('modalError').style.display = 'none';
+    document.getElementById('modalName').value = '';
+    document.getElementById('modalEmail').value = '';
+    document.getElementById('modal').classList.add('open');
+    setTimeout(() => document.getElementById('modalEmail').focus(), 100);
+  }
+
+  function closeModal() { document.getElementById('modal').classList.remove('open'); }
+  function closeModalOutside(e) { if (e.target === document.getElementById('modal')) closeModal(); }
+
+  async function submitModal() {
+    const name = document.getElementById('modalName').value.trim();
+    const email = document.getElementById('modalEmail').value.trim();
+    const errEl = document.getElementById('modalError');
+    const btn = document.getElementById('modalSubmitBtn');
+    const btnText = document.getElementById('modalBtnText');
+
+    errEl.style.display = 'none';
+
+    if (!email || !email.includes('@')) {
+      errEl.textContent = 'Please enter a valid email address.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btnText.textContent = 'Working...';
+
+    try {
+      if (currentPlan === 'starter') {
+        const res = await fetch(`${API}/v1/auth/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Something went wrong');
+
+        closeModal();
+        showKeyOverlay(data.api_key, 'Starter');
+      } else {
+        const res = await fetch(`${API}/v1/billing/checkout`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ plan: currentPlan, name, email }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Something went wrong');
+
+        window.location.href = data.checkout_url;
+      }
+    } catch (err) {
+      errEl.textContent = err.message;
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btnText.textContent = currentPlan === 'starter' ? 'Create free key' : 'Continue to checkout →';
+    }
+  }
+
+  function showKeyOverlay(key, plan) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.8);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:20px';
+    overlay.innerHTML = `
+      <div style="background:#111118;border:1px solid #7c3aed;border-radius:16px;padding:40px;max-width:500px;width:100%;text-align:center">
+        <div style="font-size:40px;margin-bottom:16px">🎉</div>
+        <div style="display:inline-block;background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.35);color:#a78bfa;font-size:12px;font-weight:700;padding:3px 10px;border-radius:100px;margin-bottom:16px;text-transform:uppercase">${plan} Plan</div>
+        <h2 style="font-size:22px;font-weight:800;margin-bottom:8px;letter-spacing:-0.5px">Your API key is ready</h2>
+        <p style="color:#9190a0;font-size:14px;margin-bottom:24px">Copy and store this — it cannot be shown again.</p>
+        <div id="keyDisplay" style="background:#0d0d14;border:1px solid #2a2a38;border-radius:10px;padding:16px;font-family:monospace;font-size:12px;color:#a78bfa;word-break:break-all;text-align:left;margin-bottom:12px">${key}</div>
+        <button onclick="navigator.clipboard.writeText('${key}').then(()=>{this.textContent='✓ Copied!';this.style.background='#10b981';setTimeout(()=>{this.textContent='Copy Key';this.style.background=''},2000)})" style="width:100%;padding:12px;background:#7c3aed;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:16px">Copy Key</button>
+        <p style="color:#9190a0;font-size:13px">Use as: <code style="color:#7dd3fc">Authorization: Bearer ${key.substring(0,16)}...</code></p>
+        <button onclick="this.closest('div[style]').remove()" style="margin-top:20px;background:none;border:1px solid #2a2a38;color:#9190a0;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:13px">Done</button>
+      </div>`;
+    document.body.appendChild(overlay);
+  }
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
 
 </body>
 </html>

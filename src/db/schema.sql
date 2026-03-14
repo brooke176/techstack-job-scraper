@@ -79,6 +79,7 @@ CREATE TABLE IF NOT EXISTS api_keys (
   requests_this_month INTEGER NOT NULL DEFAULT 0,
   month_reset_at      TIMESTAMPTZ NOT NULL DEFAULT date_trunc('month', NOW()) + interval '1 month',
   is_active               BOOLEAN NOT NULL DEFAULT true,
+  email                   TEXT,
   stripe_customer_id      TEXT,
   stripe_subscription_id  TEXT,
   created_at              TIMESTAMPTZ DEFAULT NOW(),
