@@ -4,7 +4,8 @@
   "description": "B2B tech stack data product - job board scraper",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node src/api/server.js",
+    "start:scraper": "node src/index.js",
     "scrape:greenhouse": "node src/scrapers/greenhouse.js",
     "scrape:lever": "node src/scrapers/lever.js",
     "scrape:indeed": "node src/scrapers/indeed.js",
